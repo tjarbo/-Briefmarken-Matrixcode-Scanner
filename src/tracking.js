@@ -28,16 +28,20 @@ export function calculateChecksum(matrixCode) {
 }
 
 export function getPrefixFromText(decodedText) {
-  if (!decodedText || decodedText.length < 3) {
-    return '';
+  if (!decodedText || typeof decodedText !== 'string' || decodedText.length < 3) {
+    throw new Error('Der dekodierte Text ist zu kurz, um einen Präfix zu extrahieren.');
   }
-  return decodedText.substring(0, 3).toUpperCase();
+  return decodedText.toUpperCase().substring(0, 3);
 }
 
 export function decodeTrackingNumber(decodedText, rawBytes, configuredPrefix = 'DEA') {
   // Validate inputs
-  if (!decodedText || typeof decodedText !== 'string') {
-    throw new Error('Der gelesene Datamatrix-Code enthält keinen Text.');
+  if (typeof decodedText !== 'string') {
+    throw new Error('Der gelesene Datamatrix-Code enthält keinen gültigen Text.');
+  }
+  
+  if (!decodedText) {
+    throw new Error('Der gelesene Datamatrix-Code ist leer.');
   }
 
   if (!(rawBytes instanceof Uint8Array) || rawBytes.length < 16) {
