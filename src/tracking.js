@@ -27,17 +27,30 @@ export function calculateChecksum(matrixCode) {
   return (crc[3] * 8 + crc[2] * 4 + crc[1] * 2 + crc[0]).toString(16).toUpperCase();
 }
 
-export function getPrefixFromBytes(rawBytes) {
-  return Array.from(rawBytes.slice(2, 5), (byte) => String.fromCharCode(byte)).join('');
+export function getPrefixFromText(decodedText) {
+  if (!decodedText || typeof decodedText !== 'string' || decodedText.length < 3) {
+    throw new Error('Der dekodierte Text ist zu kurz, um einen Präfix zu extrahieren.');
+  }
+  return decodedText.toUpperCase().substring(0, 3);
 }
 
-export function decodeTrackingNumber(rawBytes, configuredPrefix = 'DEA') {
+export function decodeTrackingNumber(decodedText, rawBytes, configuredPrefix = 'DEA') {
+  // Validate inputs
+  if (typeof decodedText !== 'string') {
+    throw new Error('Der gelesene Datamatrix-Code enthält keinen gültigen Text.');
+  }
+  
+  if (!decodedText) {
+    throw new Error('Der gelesene Datamatrix-Code ist leer.');
+  }
+
   if (!(rawBytes instanceof Uint8Array) || rawBytes.length < 16) {
     throw new Error('Der gelesene Datamatrix-Code ist zu kurz.');
   }
 
+  // Check prefix from decoded text
   const expectedPrefix = configuredPrefix.trim().toUpperCase();
-  const actualPrefix = getPrefixFromBytes(rawBytes);
+  const actualPrefix = getPrefixFromText(decodedText);
 
   if (expectedPrefix && actualPrefix !== expectedPrefix) {
     const error = new Error(`Ungültiger Datamatrix-Präfix: erwartet ${expectedPrefix}, gefunden ${actualPrefix || 'leer'}.`);
@@ -45,6 +58,7 @@ export function decodeTrackingNumber(rawBytes, configuredPrefix = 'DEA') {
     throw error;
   }
 
+  // Extract tracking number from raw bytes
   const trackingBase = [
     ...Array.from(rawBytes.slice(11, 16), toHex),
     (rawBytes[6] & 0x0f).toString(16).toUpperCase(),
