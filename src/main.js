@@ -307,10 +307,11 @@ async function scanCurrentFrame() {
   try {
     const result = codeReader.decode(elements.cameraFeed);
     const rawBytes = getRawBytes(result);
+    const decodedText = result.getText() || '';
 
-    elements.debugOutput.textContent = `${formatRawBytes(rawBytes)}\n\nText:\n${result.getText() || '(leer)'}`;
+    elements.debugOutput.textContent = `${formatRawBytes(rawBytes)}\n\nText:\n${decodedText || '(leer)'}`;
 
-    const trackingNumber = decodeTrackingNumber(rawBytes, elements.prefixInput.value || DEFAULT_PREFIX);
+    const trackingNumber = decodeTrackingNumber(decodedText, rawBytes, elements.prefixInput.value || DEFAULT_PREFIX);
     const isNewTrackingNumber = trackingNumber !== lastDetectedTrackingNumber;
 
     elements.trackingNumber.textContent = trackingNumber;
