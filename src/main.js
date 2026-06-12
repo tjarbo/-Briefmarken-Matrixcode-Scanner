@@ -531,7 +531,9 @@ function playSuccessTone() {
   audioContext ||= new Context();
 
   if (audioContext.state === 'suspended') {
-    audioContext.resume().catch(() => {});
+    audioContext.resume().catch((error) => {
+      console.warn('Audio context could not be resumed.', error);
+    });
   }
 
   const oscillator = audioContext.createOscillator();
